@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Protein &amp; Fiber">
+<title>Daily Protein/Fiber Goals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --field:#2C3226;
+    --paper:#FAF7F0;
+    --ink:#1B2019;
+    --soft:#6B7266;
+    --yolk:#C98A15;
+    --leaf:#6E8B3D;
+    --rule:rgba(27,32,25,.13);
+    --cols:20px 0.7fr 0.95fr 1.15fr 0.95fr 1.15fr;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--field);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-variant-numeric:tabular-nums;
+    -webkit-text-size-adjust:100%;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .scroll{
+    flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    display:flex;justify-content:center;
+    padding:16px 14px calc(40px + env(safe-area-inset-bottom));
+  }
+  .card{
+    width:100%;max-width:460px;height:-webkit-max-content;height:max-content;
+    background:var(--paper);border-radius:4px;
+    padding:22px 20px 24px;box-shadow:0 18px 44px rgba(0,0,0,.28);
+  }
+  .bar h1{
+    font-family:"Bricolage Grotesque","IBM Plex Sans",sans-serif;
+    font-weight:800;font-size:19px;line-height:1.05;letter-spacing:-.02em;
+    color:var(--paper);margin-bottom:13px;
+  }
+
+  .bulk{display:flex;gap:8px;margin:0 0 4px}
+  .bulk button{
+    font:inherit;font-size:12px;color:var(--ink);background:none;
+    border:1px solid var(--rule);border-radius:3px;padding:6px 12px;cursor:pointer;
+  }
+
+  input[type=checkbox]{
+    -webkit-appearance:none;appearance:none;width:15px;height:15px;margin:0;
+    border:1.5px solid rgba(27,32,25,.35);border-radius:2px;
+    background:var(--paper);cursor:pointer;flex:none;position:relative;
+  }
+  input[type=checkbox]:checked{background:var(--ink);border-color:var(--ink)}
+  input[type=checkbox]:checked::after{
+    content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+    border:solid var(--paper);border-width:0 1.7px 1.7px 0;transform:rotate(42deg);
+  }
+  input[type=checkbox]:indeterminate{background:var(--soft);border-color:var(--soft)}
+  input[type=checkbox]:indeterminate::after{
+    content:"";position:absolute;left:2px;top:5.5px;width:9px;height:0;
+    border-top:1.7px solid var(--paper);transform:none;
+  }
+
+  .heads{
+    display:grid;grid-template-columns:var(--cols);gap:5px;align-items:end;
+    padding-bottom:5px;font-size:10px;color:var(--ink);line-height:1.2;
+    white-space:nowrap;
+  }
+  .heads span:nth-child(n+2){text-align:right}
+
+  .meal{margin-top:22px}
+  .meal.bench{margin-top:16px}
+  summary{
+    list-style:none;cursor:pointer;padding-bottom:8px;
+    border-bottom:1.5px solid var(--ink);
+  }
+  summary::-webkit-details-marker{display:none}
+  .mtop{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .chev{
+    flex:none;width:0;height:0;opacity:.45;
+    border-left:5px solid currentColor;
+    border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+    transition:transform .15s ease;
+  }
+  details[open] .chev{transform:rotate(90deg)}
+  .mname{
+    font-family:"Bricolage Grotesque","IBM Plex Sans",sans-serif;
+    font-weight:800;font-size:16.5px;letter-spacing:-.012em;
+  }
+  .mtot{
+    display:grid;grid-template-columns:var(--cols);gap:5px;margin-top:7px;
+    font-size:13.5px;font-weight:600;
+  }
+  .mtot span:nth-child(n+2){text-align:right}
+  .mnote{font-size:12px;color:var(--soft);line-height:1.4;padding-top:8px}
+  summary .heads{padding-top:9px}
+
+  .ratings{display:flex;gap:7px;align-items:center;margin-left:auto}
+  .stars{display:inline-flex;gap:1px;line-height:1}
+  .stars i{font-style:normal;font-size:11px;color:var(--ink);opacity:.16}
+  .stars i.on{opacity:1}
+  .stars.p i.on{color:var(--yolk)}
+  .stars.f i.on{color:var(--leaf)}
+  .line1 .ratings{float:right;margin-left:10px;padding-top:3px}
+
+  .item{
+    display:grid;grid-template-columns:var(--cols);
+    column-gap:5px;row-gap:8px;align-items:center;
+    padding:11px 0;border-bottom:1px solid var(--rule);font-size:13px;
+  }
+  .item:last-child{border-bottom:none}
+  .item > input{grid-column:1;grid-row:1}
+  .line1{grid-column:2 / -1;grid-row:1;font-size:14px;line-height:1.35;cursor:pointer}
+  .line1 .amt{color:var(--soft);font-size:12.5px}
+  .item > :nth-child(n+3){grid-row:2}
+  .item > :nth-child(3){grid-column:2}
+  .item > :nth-child(4){grid-column:3}
+  .item > :nth-child(5){grid-column:4}
+  .item > :nth-child(6){grid-column:5}
+  .item > :nth-child(7){grid-column:6}
+  .item.off > :not(input){opacity:.34}
+  .bench .item.off > .line1{opacity:1}
+  .item > .inote{
+    grid-column:2 / -1;grid-row:3;margin-top:2px;
+    font-size:12px;color:var(--soft);line-height:1.4;
+  }
+
+  .num{text-align:right;font-weight:500}
+  .num.p{font-weight:600}
+  .num.z{color:var(--soft);font-weight:400}
+  .num.den{color:var(--soft);font-weight:400}
+
+  .pick{
+    margin:30px 0 6px;padding-top:16px;border-top:1.5px solid var(--ink);
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  }
+  .pick strong{
+    font-family:"Bricolage Grotesque","IBM Plex Sans",sans-serif;
+    font-weight:800;font-size:16.5px;letter-spacing:-.012em;
+  }
+  .pick span{font-size:12.5px;color:var(--soft);text-align:right;line-height:1.4}
+
+  .bar{
+    flex:0 0 auto;z-index:5;
+    background:#171B14;color:var(--paper);
+    border-bottom:1px solid rgba(250,247,240,.16);
+    padding:calc(13px + env(safe-area-inset-top)) 16px 14px;
+  }
+  .bar .inner{max-width:460px;margin:0 auto}
+  .bar .stats{display:flex;gap:12px;align-items:flex-start}
+  .bar .stat{flex:1 1 0;min-width:0}
+  .bar .stat:first-child{flex:0 0 auto;min-width:56px}
+  .bar .stat b{white-space:nowrap}
+  .bar .stat b{
+    font-family:"Bricolage Grotesque","IBM Plex Sans",sans-serif;
+    font-weight:800;font-size:20px;letter-spacing:-.02em;display:block;line-height:1.1;
+  }
+  .bar .lbl{
+    display:block;font-size:13px;font-weight:500;margin-bottom:5px;
+    color:rgba(250,247,240,.74);letter-spacing:-.005em;
+  }
+  .bar .prog{display:block;height:3px;margin-top:6px;background:rgba(250,247,240,.18);border-radius:2px;overflow:hidden}
+  .bar .prog s{display:block;height:100%;width:0;text-decoration:none;transition:width .18s ease}
+  .bar .prog s.p{background:var(--yolk)}
+  .bar .prog s.f{background:var(--leaf)}
+  .bar .prog s.done{background:var(--paper)}
+  .goal{
+    font:inherit;font-variant-numeric:tabular-nums;
+    width:38px;padding:0;margin:0 1px;
+    color:rgba(250,247,240,.8);background:none;border:none;
+    border-bottom:1px dashed rgba(250,247,240,.45);
+  }
+  .goal::-webkit-outer-spin-button,.goal::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+</style>
+</head>
+<body>
+  <header class="bar">
+    <div class="inner">
+      <h1>Daily Protein/Fiber Goals</h1>
+      <div class="stats">
+      <div class="stat"><span class="lbl">Calories</span><b id="t-cal">632</b></div>
+      <div class="stat">
+        <span class="lbl">Protein goal</span>
+        <b><span id="t-pro">62</span> / <input class="goal" id="g-pro" type="number" min="0" step="5" value="100" aria-label="Protein goal in grams"> g</b>
+        <i class="prog"><s id="p-pro" class="p"></s></i>
+      </div>
+      <div class="stat">
+        <span class="lbl">Fiber goal</span>
+        <b><span id="t-fib">14.4</span> / <input class="goal" id="g-fib" type="number" min="0" step="1" value="30" aria-label="Fiber goal in grams"> g</b>
+        <i class="prog"><s id="p-fib" class="f"></s></i>
+      </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="scroll">
+  <div class="card">
+    <div class="bulk"><button type="button" id="clear">Clear all</button></div>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="0" aria-label="Select all of Coffee & creamer" checked>
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">Coffee & creamer</span>
+            <span class="ratings" title="Coffee & creamer: protein 0 of 5, fiber 0 of 5"><span class="stars p"><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>30</span><span>—</span><span>—</span><span>—</span><span>—</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c1" data-cal="0" data-pro="0" data-fib="0" data-sec="0" checked>
+          <label class="line1" for="c1">Coffee, black</label>
+          <div class="num z">0</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c2" data-cal="30" data-pro="0" data-fib="0" data-sec="0" checked>
+          <label class="line1" for="c2">Coffee Mate Zero Sugar French Vanilla <span class="amt">(2 tbsp)</span></label>
+          <div class="num">30</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+      </details>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="1" aria-label="Select all of Brunch bowl" checked>
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">Brunch bowl</span>
+            <span class="ratings" title="Brunch bowl: protein 4 of 5, fiber 1 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>572</span><span>62 g</span><span>11</span><span>7.4 g</span><span>1</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c3" data-cal="150" data-pro="22" data-fib="0" data-sec="1" checked>
+          <label class="line1" for="c3">Ground turkey, 93% <span class="amt">(100 g)</span></label>
+          <div class="num">150</div>
+          <div class="num p">22 g</div>
+          <div class="num den">15</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c4" data-cal="90" data-pro="20" data-fib="0" data-sec="1" checked>
+          <label class="line1" for="c4">Egg whites <span class="amt">(6 oz)</span></label>
+          <div class="num">90</div>
+          <div class="num p">20 g</div>
+          <div class="num den">22</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c5" data-cal="70" data-pro="6" data-fib="0" data-sec="1" checked>
+          <label class="line1" for="c5">Whole egg <span class="amt">(1)</span></label>
+          <div class="num">70</div>
+          <div class="num p">6 g</div>
+          <div class="num den">9</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c6" data-cal="78" data-pro="5" data-fib="2.4" data-sec="1" checked>
+          <label class="line1" for="c6">Black &amp; pinto mix <span class="amt">(60 g)</span></label>
+          <div class="num">78</div>
+          <div class="num p">5 g</div>
+          <div class="num den">6</div>
+          <div class="num">2.4 g</div>
+          <div class="num den">3</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c7" data-cal="55" data-pro="4" data-fib="5" data-sec="1" checked>
+          <label class="line1" for="c7">Broccoli <span class="amt">(1 cup cooked)</span></label>
+          <div class="num">55</div>
+          <div class="num p">4 g</div>
+          <div class="num den">7</div>
+          <div class="num">5 g</div>
+          <div class="num den">9</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c8" data-cal="80" data-pro="5" data-fib="0" data-sec="1" checked>
+          <label class="line1" for="c8">Cheddar <span class="amt">(20 g)</span></label>
+          <div class="num">80</div>
+          <div class="num p">5 g</div>
+          <div class="num den">6</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c9" data-cal="49" data-pro="0" data-fib="0" data-sec="1" checked>
+          <label class="line1" for="c9">Salsa, hot sauce, taco seasoning <span class="amt">(80 g salsa)</span></label>
+          <div class="num">49</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+      </details>
+
+      <div class="pick"><strong>Snacks</strong><span>One or two before dinner</span></div>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="3" aria-label="Select all of Yogurt &amp; berries">
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">Yogurt &amp; berries</span>
+            <span class="ratings" title="Yogurt &amp; berries: protein 4 of 5, fiber 2 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>202</span><span>24 g</span><span>12</span><span>6 g</span><span>3</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c10" data-cal="100" data-pro="17" data-fib="0" data-sec="3">
+          <label class="line1" for="c10">Oikos Triple Zero <span class="amt">(170 g)</span></label>
+          <div class="num">100</div>
+          <div class="num p">17 g</div>
+          <div class="num den">17</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c11" data-cal="70" data-pro="1" data-fib="6" data-sec="3">
+          <label class="line1" for="c11">Kirkland three-berry blend <span class="amt">(126 g)</span></label>
+          <div class="num">70</div>
+          <div class="num p">1 g</div>
+          <div class="num den">1</div>
+          <div class="num">6 g</div>
+          <div class="num den">9</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c12" data-cal="32" data-pro="6" data-fib="0" data-sec="3">
+          <label class="line1" for="c12">Protein powder <span class="amt">(8 g)</span></label>
+          <div class="num">32</div>
+          <div class="num p">6 g</div>
+          <div class="num den">19</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+      </details>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="4" aria-label="Select all of Cottage cheese &amp; berries">
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">Cottage cheese &amp; berries</span>
+            <span class="ratings" title="Cottage cheese &amp; berries: protein 3 of 5, fiber 2 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>210</span><span>19 g</span><span>9</span><span>6 g</span><span>3</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c13" data-cal="140" data-pro="18" data-fib="0" data-sec="4">
+          <label class="line1" for="c13">Cottage cheese <span class="amt">(160 g)</span></label>
+          <div class="num">140</div>
+          <div class="num p">18 g</div>
+          <div class="num den">13</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c14" data-cal="70" data-pro="1" data-fib="6" data-sec="4">
+          <label class="line1" for="c14">Kirkland three-berry blend <span class="amt">(126 g)</span></label>
+          <div class="num">70</div>
+          <div class="num p">1 g</div>
+          <div class="num den">1</div>
+          <div class="num">6 g</div>
+          <div class="num den">9</div>
+        </div>
+      </details>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="5" aria-label="Select all of Tuna salad">
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">Tuna salad</span>
+            <span class="ratings" title="Tuna salad: protein 5 of 5, fiber 0 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i></span><span class="stars f"><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>132</span><span>24 g</span><span>18</span><span>—</span><span>—</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c15" data-cal="90" data-pro="20" data-fib="0" data-sec="5">
+          <label class="line1" for="c15">Tuna in water, drained <span class="amt">(85 g)</span></label>
+          <div class="num">90</div>
+          <div class="num p">20 g</div>
+          <div class="num den">22</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c16" data-cal="24" data-pro="4" data-fib="0" data-sec="5">
+          <label class="line1" for="c16">Oikos Triple Zero, plain <span class="amt">(40 g)</span></label>
+          <div class="num">24</div>
+          <div class="num p">4 g</div>
+          <div class="num den">17</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c17" data-cal="18" data-pro="0" data-fib="0" data-sec="5">
+          <label class="line1" for="c17">Light mayo <span class="amt">(½ tbsp)</span></label>
+          <div class="num">18</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+      </details>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="6" aria-label="Select all of Salmon patty">
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">Salmon patty</span>
+            <span class="ratings" title="Salmon patty: protein 3 of 5, fiber 1 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>250</span><span>24 g</span><span>10</span><span>4.4 g</span><span>2</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c18" data-cal="170" data-pro="20" data-fib="0" data-sec="6">
+          <label class="line1" for="c18">Costco salmon patty <span class="amt">(113 g)</span></label>
+          <div class="num">170</div>
+          <div class="num p">20 g</div>
+          <div class="num den">12</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c19" data-cal="62" data-pro="4" data-fib="4.4" data-sec="6">
+          <label class="line1" for="c19">Peas, cooked <span class="amt">(½ cup)</span></label>
+          <div class="num">62</div>
+          <div class="num p">4 g</div>
+          <div class="num den">6</div>
+          <div class="num">4.4 g</div>
+          <div class="num den">7</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c20" data-cal="18" data-pro="0" data-fib="0" data-sec="6">
+          <label class="line1" for="c20">Light mayo <span class="amt">(½ tbsp)</span></label>
+          <div class="num">18</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+      </details>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="7" aria-label="Select all of Ham &amp; cheese">
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">Ham &amp; cheese</span>
+            <span class="ratings" title="Ham &amp; cheese: protein 3 of 5, fiber 0 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>188</span><span>17 g</span><span>9</span><span>—</span><span>—</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c21" data-cal="90" data-pro="11" data-fib="0" data-sec="7">
+          <label class="line1" for="c21">Deli ham <span class="amt">(5 slices, 75 g)</span></label>
+          <div class="num">90</div>
+          <div class="num p">11 g</div>
+          <div class="num den">12</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c22" data-cal="80" data-pro="6" data-fib="0" data-sec="7">
+          <label class="line1" for="c22">String cheese <span class="amt">(28 g)</span></label>
+          <div class="num">80</div>
+          <div class="num p">6 g</div>
+          <div class="num den">8</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c23" data-cal="18" data-pro="0" data-fib="0" data-sec="7">
+          <label class="line1" for="c23">Dijon mustard</label>
+          <div class="num">18</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+      </details>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="8" aria-label="Select all of String cheese">
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">String cheese</span>
+            <span class="ratings" title="String cheese: protein 3 of 5, fiber 0 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>80</span><span>6 g</span><span>8</span><span>—</span><span>—</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c24" data-cal="80" data-pro="6" data-fib="0" data-sec="8">
+          <label class="line1" for="c24">String cheese <span class="amt">(28 g)</span></label>
+          <div class="num">80</div>
+          <div class="num p">6 g</div>
+          <div class="num den">8</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+        </div>
+      </details>
+
+      <details class="meal">
+        <summary>
+          <div class="mtop">
+            <input type="checkbox" class="mbox" data-meal="9" aria-label="Select all of Apple">
+            <span class="chev" aria-hidden="true"></span>
+            <span class="mname">Apple</span>
+            <span class="ratings" title="Apple: protein 1 of 5, fiber 2 of 5"><span class="stars p"><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+          <div class="mtot"><span></span><span>115</span><span>0.6 g</span><span>1</span><span>5 g</span><span>4</span></div>
+        </summary>
+        <div class="item">
+          <input type="checkbox" id="c25" data-cal="115" data-pro="0.6" data-fib="5" data-sec="9">
+          <label class="line1" for="c25">Apple, with skin <span class="amt">(1 large)</span></label>
+          <div class="num">115</div>
+          <div class="num p">0.6 g</div>
+          <div class="num den">1</div>
+          <div class="num">5 g</div>
+          <div class="num den">4</div>
+        </div>
+      </details>
+
+      <div class="pick"><strong>Fiber add-ons</strong></div>
+
+      <section class="meal bench">
+        <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
+        <div class="item">
+          <input type="checkbox" id="c26" data-cal="30" data-pro="0" data-fib="7" data-sec="11" checked>
+          <label class="line1" for="c26"><span class="ratings" title="Psyllium husk powder: protein 0 of 5, fiber 5 of 5"><span class="stars p"><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i></span></span>Psyllium husk powder <span class="amt">(1 tbsp, 9 g · with 12 oz water)</span></label>
+          <div class="num">30</div>
+          <div class="num z">—</div>
+          <div class="num den z">—</div>
+          <div class="num">7 g</div>
+          <div class="num den">23</div>
+          <p class="inote">Take 30 minutes before dinner.</p>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c27" data-cal="140" data-pro="5" data-fib="10" data-sec="11">
+          <label class="line1" for="c27"><span class="ratings" title="Chia seeds, soaked: protein 2 of 5, fiber 4 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i></span></span>Chia seeds, soaked <span class="amt">(2 tbsp)</span></label>
+          <div class="num">140</div>
+          <div class="num p">5 g</div>
+          <div class="num den">4</div>
+          <div class="num">10 g</div>
+          <div class="num den">7</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c28" data-cal="110" data-pro="4" data-fib="6" data-sec="11">
+          <label class="line1" for="c28"><span class="ratings" title="Ground flax, mixed in: protein 2 of 5, fiber 3 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>Ground flax, mixed in <span class="amt">(2 tbsp)</span></label>
+          <div class="num">110</div>
+          <div class="num p">4 g</div>
+          <div class="num den">4</div>
+          <div class="num">6 g</div>
+          <div class="num den">5</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c29" data-cal="55" data-pro="4" data-fib="5" data-sec="11">
+          <label class="line1" for="c29"><span class="ratings" title="Broccoli: protein 3 of 5, fiber 4 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i></span></span>Broccoli <span class="amt">(1 cup cooked)</span></label>
+          <div class="num">55</div>
+          <div class="num p">4 g</div>
+          <div class="num den">7</div>
+          <div class="num">5 g</div>
+          <div class="num den">9</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c30" data-cal="62" data-pro="4" data-fib="4.4" data-sec="11">
+          <label class="line1" for="c30"><span class="ratings" title="Peas, cooked: protein 3 of 5, fiber 4 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i></span></span>Peas, cooked <span class="amt">(½ cup)</span></label>
+          <div class="num">62</div>
+          <div class="num p">4 g</div>
+          <div class="num den">6</div>
+          <div class="num">4.4 g</div>
+          <div class="num den">7</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c31" data-cal="115" data-pro="8" data-fib="7" data-sec="11">
+          <label class="line1" for="c31"><span class="ratings" title="Black beans: protein 3 of 5, fiber 3 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>Black beans <span class="amt">(½ cup)</span></label>
+          <div class="num">115</div>
+          <div class="num p">8 g</div>
+          <div class="num den">7</div>
+          <div class="num">7 g</div>
+          <div class="num den">6</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c32" data-cal="120" data-pro="7" data-fib="6" data-sec="11">
+          <label class="line1" for="c32"><span class="ratings" title="Refried beans: protein 2 of 5, fiber 3 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>Refried beans <span class="amt">(½ cup)</span></label>
+          <div class="num">120</div>
+          <div class="num p">7 g</div>
+          <div class="num den">6</div>
+          <div class="num">6 g</div>
+          <div class="num den">5</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c33" data-cal="160" data-pro="2" data-fib="5" data-sec="11">
+          <label class="line1" for="c33"><span class="ratings" title="Avocado: protein 1 of 5, fiber 2 of 5"><span class="stars p"><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>Avocado <span class="amt">(½ medium)</span></label>
+          <div class="num">160</div>
+          <div class="num p">2 g</div>
+          <div class="num den">1</div>
+          <div class="num">5 g</div>
+          <div class="num den">3</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c34" data-cal="115" data-pro="0.6" data-fib="5" data-sec="11">
+          <label class="line1" for="c34"><span class="ratings" title="Apple, with skin: protein 1 of 5, fiber 2 of 5"><span class="stars p"><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>Apple, with skin <span class="amt">(1 large)</span></label>
+          <div class="num">115</div>
+          <div class="num p">0.6 g</div>
+          <div class="num den">1</div>
+          <div class="num">5 g</div>
+          <div class="num den">4</div>
+        </div>
+        <div class="item">
+          <input type="checkbox" id="c35" data-cal="78" data-pro="1" data-fib="6.7" data-sec="11">
+          <label class="line1" for="c35"><span class="ratings" title="Kirkland three-berry blend: protein 1 of 5, fiber 4 of 5"><span class="stars p"><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i></span></span>Kirkland three-berry blend <span class="amt">(1 cup, 140 g)</span></label>
+          <div class="num">78</div>
+          <div class="num p">1 g</div>
+          <div class="num den">1</div>
+          <div class="num">6.7 g</div>
+          <div class="num den">9</div>
+        </div>
+      </section>
+  </div>
+  </div>
+
+
+<script>
+(function () {
+  var boxes = [].slice.call(document.querySelectorAll('input[data-cal]'));
+  var meals = [].slice.call(document.querySelectorAll('.mbox'));
+
+  function trim(n) {
+    n = Math.round(n * 10) / 10;
+    return String(n);
+  }
+
+  function render() {
+    var cal = 0, pro = 0, fib = 0;
+    boxes.forEach(function (b) {
+      var row = b.parentNode;
+      row.className = b.checked ? 'item' : 'item off';
+      if (!b.checked) return;
+      cal += +b.getAttribute('data-cal');
+      pro += +b.getAttribute('data-pro');
+      fib += +b.getAttribute('data-fib');
+    });
+
+    meals.forEach(function (m) {
+      var si = m.getAttribute('data-meal');
+      var kids = boxes.filter(function (b) { return b.getAttribute('data-sec') === si; });
+      var n = kids.filter(function (b) { return b.checked; }).length;
+      m.checked = n === kids.length;
+      m.indeterminate = n > 0 && n < kids.length;
+    });
+
+    var goalP = Math.max(0, +document.getElementById('g-pro').value || 0);
+    var goalF = Math.max(0, +document.getElementById('g-fib').value || 0);
+    document.getElementById('t-cal').textContent = Math.round(cal);
+    document.getElementById('t-pro').textContent = trim(pro);
+    document.getElementById('t-fib').textContent = trim(fib);
+
+    [['p-pro', pro, goalP], ['p-fib', fib, goalF]].forEach(function (a) {
+      var el = document.getElementById(a[0]);
+      var pct = a[2] > 0 ? Math.min(100, a[1] / a[2] * 100) : 0;
+      el.style.width = pct.toFixed(1) + '%';
+      el.className = el.className.replace(' done', '') + (a[2] > 0 && a[1] >= a[2] ? ' done' : '');
+    });
+  }
+
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.className === 'mbox') {
+      var si = t.getAttribute('data-meal');
+      boxes.forEach(function (b) {
+        if (b.getAttribute('data-sec') === si) b.checked = t.checked;
+      });
+    }
+    render();
+  });
+
+  // a checkbox inside <summary> would otherwise open or close the block
+  meals.forEach(function (m) {
+    m.addEventListener('click', function (e) { e.stopPropagation(); });
+  });
+
+  [].slice.call(document.querySelectorAll('.goal')).forEach(function (el) {
+    el.addEventListener('input', render);
+  });
+
+  document.getElementById('clear').addEventListener('click', function () {
+    boxes.forEach(function (b) { b.checked = false; });
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
