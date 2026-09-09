@@ -107,7 +107,8 @@
 
   .shot{padding:10px 0 2px}
   .shot img{
-    width:100%;max-width:188px;height:auto;vertical-align:top;
+    /* fit any aspect into the same box, so tall photos don't tower over wide ones */
+    max-width:min(188px,100%);max-height:188px;width:auto;height:auto;vertical-align:top;
     filter:drop-shadow(0 6px 13px rgba(27,32,25,.24));
   }
 
@@ -549,6 +550,9 @@
             <span class="mname">Apple</span>
             <span class="ratings" title="Apple: protein 1 of 5, fiber 2 of 5"><span class="stars p"><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
           </div>
+          <div class="shot">
+            <img src="photos/apple.webp" width="740" height="760" loading="lazy" alt="Red apple">
+          </div>
           <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
           <div class="mtot"><span></span><span>115</span><span>0.6 g</span><span>1</span><span>5 g</span><span>4</span></div>
         </summary>
@@ -580,6 +584,9 @@
             <span class="chev" aria-hidden="true"></span>
             <span class="mname">Egg</span>
             <span class="ratings" title="Egg: protein 3 of 5, fiber 0 of 5"><span class="stars p"><i class="on">&#9733;</i><i class="on">&#9733;</i><i class="on">&#9733;</i><i>&#9733;</i><i>&#9733;</i></span><span class="stars f"><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></span></span>
+          </div>
+          <div class="shot">
+            <img src="photos/egg.webp" width="566" height="760" loading="lazy" alt="Brown egg">
           </div>
           <div class="heads"><span></span><span>cal</span><span>protein</span><span>protein/100</span><span>fiber</span><span>fiber/100</span></div>
           <div class="mtot"><span></span><span>78</span><span>6.3 g</span><span>8</span><span>—</span><span>—</span></div>
