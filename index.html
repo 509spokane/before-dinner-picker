@@ -553,7 +553,7 @@
           <div class="mtot"><span></span><span>115</span><span>0.6 g</span><span>1</span><span>5 g</span><span>4</span></div>
         </summary>
         <div class="item">
-          <input type="checkbox" id="c25" data-cal="115" data-pro="0.6" data-fib="5" data-sec="9">
+          <input type="checkbox" id="c25" data-cal="115" data-pro="0.6" data-fib="5" data-sec="9" data-excl="apple">
           <label class="line1" for="c25">Apple, with skin <span class="amt">(1 large)</span></label>
           <div class="num">115</div>
           <div class="num p">0.6 g</div>
@@ -562,14 +562,14 @@
           <div class="num den">4</div>
         </div>
         <div class="item">
-          <input type="checkbox" id="c44" data-cal="58" data-pro="0.3" data-fib="2.5" data-sec="9">
+          <input type="checkbox" id="c44" data-cal="58" data-pro="0.3" data-fib="2.5" data-sec="9" data-excl="apple">
           <label class="line1" for="c44">Apple, with skin <span class="amt">(½ large)</span></label>
           <div class="num">58</div>
           <div class="num p">0.3 g</div>
           <div class="num den">1</div>
           <div class="num">2.5 g</div>
           <div class="num den">4</div>
-          <p class="inote">Half portion — pick this or the whole one, not both.</p>
+          <p class="inote">Half portion — picking one clears the other.</p>
         </div>
       </details>
 
@@ -795,6 +795,25 @@
     });
   }
 
+  // boxes sharing a data-excl group are alternate portions of one food:
+  // at most one of them may be checked at a time
+  function soloInGroup(win) {
+    var g = win.getAttribute('data-excl');
+    if (!g) return;
+    boxes.forEach(function (b) {
+      if (b !== win && b.getAttribute('data-excl') === g) b.checked = false;
+    });
+  }
+
+  function thinGroups() {
+    var seen = {};
+    boxes.forEach(function (b) {
+      var g = b.getAttribute('data-excl');
+      if (!g || !b.checked) return;
+      if (seen[g]) b.checked = false; else seen[g] = true;
+    });
+  }
+
   document.addEventListener('change', function (e) {
     var t = e.target;
     if (t.className === 'mbox') {
@@ -802,6 +821,9 @@
       boxes.forEach(function (b) {
         if (b.getAttribute('data-sec') === si) b.checked = t.checked;
       });
+      if (t.checked) thinGroups();  // "select all" must not tick two portions of one food
+    } else if (t.checked) {
+      soloInGroup(t);
     }
     render();
   });
