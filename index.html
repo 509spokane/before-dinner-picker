@@ -835,7 +835,8 @@
     var cal = 0, pro = 0, fib = 0;
     boxes.forEach(function (b) {
       var row = b.parentNode;
-      row.className = b.checked ? 'item' : 'item off';
+      // toggle, don't reassign: the row may also carry .withshot
+      row.classList.toggle('off', !b.checked);
       if (!b.checked) return;
       cal += +b.getAttribute('data-cal');
       pro += +b.getAttribute('data-pro');
